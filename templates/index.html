@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}AI Music Board — Music made from prompts{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero__eyebrow">Prompt → Track</div>
+  <h1>Where one line of<br />prompt becomes a track</h1>
+  <p>Share music generated with Stable Audio 3, and listen to other people's prompts and results.</p>
+</section>
+
+<div class="divider-waves" aria-hidden="true">
+  <span style="height: 30%"></span><span style="height: 70%"></span><span style="height: 45%"></span>
+  <span style="height: 90%"></span><span style="height: 55%"></span><span style="height: 35%"></span>
+  <span style="height: 65%"></span><span style="height: 40%"></span><span style="height: 80%"></span>
+  <span style="height: 50%"></span><span style="height: 25%"></span><span style="height: 60%"></span>
+</div>
+
+<div class="post-list" id="post-list">
+  <div class="empty-state">Loading...</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}

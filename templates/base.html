@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}AI Music Board{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body{% block body_attrs %}{% endblock %}>
+  <nav class="nav">
+    <a class="nav__brand" href="/">
+      <span class="bars"><span></span><span></span><span></span><span></span></span>
+      AI Music Board
+    </a>
+    <div class="nav__links">
+      <a href="/orchestra" class="btn btn--ghost">Orchestra</a>
+      <span id="nav-links" style="display:contents"></span>
+    </div>
+  </nav>
+
+  <main class="page{% block page_class %}{% endblock %}">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

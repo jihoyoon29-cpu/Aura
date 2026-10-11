@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block title %}Create an orchestra piece — AI Music Board{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero__eyebrow">Orchestra</div>
+  <h1>Create an orchestra score</h1>
+  <p>Describe the piece you want in as much detail as you like, choose the time signature, tempo, key, instruments, difficulty, and how much it should repeat or vary, and GPT will write sheet music (MusicXML) for each instrument.</p>
+</section>
+
+<div class="form-msg" id="form-msg"></div>
+
+<div class="orch">
+  <!-- 1. Mood prompt -->
+  <section class="orch-card">
+    <h2 class="orch-card__title">1. What kind of piece do you want?</h2>
+    <div class="field">
+      <label for="mood">Describe the piece (as much detail as you like)</label>
+      <textarea id="mood" class="brief" rows="6" maxlength="1500" placeholder="e.g. A grand, solemn march in the style of Beethoven.&#10;Start quietly with low strings, build to a triumphant brass climax around the middle, then a calm, reflective passage before a powerful ending.&#10;Keep the main theme recognizable but never repeat it the same way twice."></textarea>
+      <div class="field__hint"><span id="mood-count">0</span> / 1500 &middot; Mention mood, composers or eras, structure, instruments' roles, how it should start and end &mdash; every line is used.</div>
+    </div>
+    <button type="button" class="btn btn--ghost" id="recommend-btn">Get instrument recommendations for this mood</button>
+    <p class="rec-reason" id="rec-reason" style="display:none;"></p>
+  </section>
+
+  <!-- 2. Basic settings -->
+  <section class="orch-card">
+    <h2 class="orch-card__title">2. Basic settings</h2>
+
+    <div class="orch-settings">
+      <div class="field">
+        <label>Time signature</label>
+        <div class="inline">
+          <select id="beats">
+            <option>2</option><option>3</option><option selected>4</option>
+            <option>5</option><option>6</option><option>9</option><option>12</option>
+          </select>
+          <span class="inline__sep">/</span>
+          <select id="beat-type">
+            <option>2</option><option selected>4</option><option>8</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="tempo">Tempo (quarter note = <span id="tempo-val">120</span> BPM) <span id="tempo-term" class="muted"></span></label>
+        <input type="range" id="tempo" min="40" max="200" step="2" value="120" />
+      </div>
+
+      <div class="field">
+        <label for="fifths">Key signature (number of sharps / flats)</label>
+        <select id="fifths"></select>
+      </div>
+
+      <div class="field">
+        <label for="measures">Length (measures)</label>
+        <select id="measures">
+          <option value="4">4 measures</option>
+          <option value="8" selected>8 measures</option>
+          <option value="12">12 measures</option>
+          <option value="24">24 measures</option>
+          <option value="50">50 measures</option>
+          <option value="100">100 measures</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Sheet music difficulty (playing experience)</label>
+      <div class="orch-diff">
+        <label class="radio-card">
+          <input type="radio" name="difficulty" value="beginner" checked />
+          <span><strong>Beginner</strong><br />New to the instrument</span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="difficulty" value="intermediate" />
+          <span><strong>Intermediate</strong><br />A few years of experience</span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="difficulty" value="advanced" />
+          <span><strong>Advanced</strong><br />Long-time experienced player</span>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Variation & dynamics -->
+  <section class="orch-card">
+    <h2 class="orch-card__title">3. Variation &amp; dynamics</h2>
+    <p class="muted">Long pieces can start to repeat themselves. These controls tell the composer how much to repeat and how much to change.</p>
+    <div class="orch-settings">
+      <div class="field">
+        <label for="var-repetition">Repetition vs. variation</label>
+        <select id="var-repetition">
+          <option value="faithful">Faithful repetition (refrains, ostinatos)</option>
+          <option value="balanced" selected>Balanced (themes return, but changed)</option>
+          <option value="varied">Highly varied (always developing)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="var-dynamics">Dynamics (loudness)</label>
+        <select id="var-dynamics">
+          <option value="none">None (flat)</option>
+          <option value="subtle">Subtle</option>
+          <option value="expressive" selected>Expressive (pp to ff, crescendos)</option>
+          <option value="dramatic">Dramatic (extreme contrasts)</option>
+        </select>
+      </div>
+    </div>
+    <div class="check-row">
+      <label class="check"><input type="checkbox" id="var-plan" checked /> <span>Plan the overall form first <em>(sections like A–B–A′; recommended for 12+ measures, adds a few seconds)</em></span></label>
+      <label class="check"><input type="checkbox" id="var-tempo" /> <span>Allow tempo changes between sections</span></label>
+      <label class="check"><input type="checkbox" id="var-meter" /> <span>Allow time-signature changes</span></label>
+    </div>
+  </section>
+
+  <!-- 4. Instrument selection -->
+  <section class="orch-card">
+    <h2 class="orch-card__title">4. Choose instruments</h2>
+    <p class="muted">Click <span class="pv-inline">▶</span> next to an instrument's name to hear a 1-second sample.
+      Instruments that fit the mood are shown in <strong>bold</strong>.</p>
+    <div id="inst-groups" class="inst-groups"></div>
+  </section>
+
+  <button type="button" class="btn btn--primary btn--lg" id="generate-btn">Generate orchestra score</button>
+  <div class="generator-status" id="gen-status"></div>
+
+  <!-- Result -->
+  <section class="orch-result" id="result" style="display:none;">
+    <p class="rec-reason" id="ref-note" style="display:none;"></p>
+    <h2 class="orch-card__title">Ensemble preview</h2>
+    <div class="playback" id="playback">
+      <button type="button" class="btn btn--primary" id="pb-play">▶ Play</button>
+      <button type="button" class="btn btn--ghost" id="pb-pause">❚❚ Pause</button>
+      <button type="button" class="btn btn--ghost" id="pb-stop">■ Stop</button>
+      <input type="range" class="pb-seek" id="pb-seek" value="0" aria-label="Playback position" />
+      <span class="pb-time" id="pb-time">0:00 / 0:00</span>
+      <span class="muted" id="pb-note"></span>
+    </div>
+    <p class="muted">Click an instrument to mute or unmute it (takes effect instantly, even during playback). Stop remembers where you left off, and you can drag the bar to jump anywhere.</p>
+    <div id="pb-mutes" class="pb-mutes"></div>
+    <div class="full-score" id="full-score"></div>
+
+    <h2 class="orch-card__title">Sheet music by instrument</h2>
+    <div id="per-instrument" class="per-instrument"></div>
+
+    <div class="orch-actions">
+      <button type="button" class="btn btn--ghost" id="download-xml">Download MusicXML</button>
+      <button type="button" class="btn btn--ghost" id="download-pdf">Download PDF</button>
+      <button type="button" class="btn btn--ghost" id="toggle-post">Post this</button>
+    </div>
+
+    <form id="post-form" class="orch-post" style="display:none;">
+      <div class="field">
+        <label for="post-title">Title</label>
+        <input type="text" id="post-title" required />
+      </div>
+      <div class="field">
+        <label for="post-content">Description (optional)</label>
+        <textarea id="post-content" rows="3"></textarea>
+      </div>
+      <button type="submit" class="btn btn--primary" id="post-submit">Post</button>
+    </form>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{{ url_for('static', filename='js/orchestra.js') }}"></script>
+{% endblock %}

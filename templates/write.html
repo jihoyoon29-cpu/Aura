@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Create a track — AI Music Board{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero__eyebrow">New track</div>
+  <h1>Create a new track</h1>
+  <p>Enter a music prompt, generate audio with AI, then post it.</p>
+</section>
+
+<div class="form-msg" id="form-msg"></div>
+
+<form id="post-form">
+  <div class="field">
+    <label for="prompt">Music prompt <span style="color: var(--paper-dim); text-transform: none; letter-spacing: 0;">(if generating with AI)</span></label>
+    <textarea id="prompt" placeholder="e.g. 128 BPM lo-fi house drum loop with warm analog synth pads"></textarea>
+  </div>
+
+  <div class="audio-generator">
+    <button type="button" class="btn btn--primary" id="generate-btn">Generate with AI</button>
+    <div class="waveform" id="waveform"></div>
+    <div class="generator-status" id="generator-status"></div>
+    <div id="player-wrap" style="display:none;">
+      <audio class="audio-player" id="audio-player" controls></audio>
+    </div>
+  </div>
+
+  <div class="divider-waves" aria-hidden="true" style="position: relative;">
+    <span style="height: 40%"></span><span style="height: 60%"></span><span style="height: 30%"></span>
+    <span style="height: 80%"></span><span style="height: 50%"></span><span style="height: 65%"></span>
+    <span style="height: 35%"></span><span style="height: 55%"></span><span style="height: 45%"></span>
+  </div>
+  <p style="text-align:center; color: var(--paper-dim); font-family: var(--font-mono); font-size: 0.78rem; margin: -18px 0 20px;">or</p>
+
+  <div class="field">
+    <label for="youtube-url">Use a YouTube link instead</label>
+    <input type="url" id="youtube-url" placeholder="https://www.youtube.com/watch?v=..." />
+  </div>
+  <div id="youtube-preview-wrap" style="display:none; margin: -6px 0 18px;">
+    <div class="player-block" style="padding: 0; overflow: hidden;">
+      <div style="position: relative; padding-top: 56.25%;">
+        <iframe id="youtube-preview" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="title">Title</label>
+    <input type="text" id="title" required />
+  </div>
+  <div class="field">
+    <label for="content">Description</label>
+    <textarea id="content" placeholder="Tell us about this track (optional)"></textarea>
+  </div>
+
+  <button type="submit" class="btn btn--primary" id="submit-btn" disabled>Post</button>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{{ url_for('static', filename='js/write.js') }}"></script>
+{% endblock %}

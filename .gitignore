@@ -1,0 +1,9 @@
+.env
+serviceAccountKey.json
+__pycache__/
+*.pyc
+.venv/
+static/generated/*
+!static/generated/.gitkeep
+.DS_Store
+.claude/
