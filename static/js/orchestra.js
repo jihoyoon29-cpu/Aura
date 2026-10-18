@@ -236,6 +236,7 @@ generateBtn.addEventListener("click", async () => {
     beatType: Number(beatTypeSel.value),
     tempo: Number(tempoInput.value),
     fifths: Number(fifthsSel.value),
+    mode: $("key-mode").value,
     measures: Number(measuresSel.value),
     difficulty: document.querySelector('input[name="difficulty"]:checked').value,
     variation: {
@@ -266,8 +267,21 @@ generateBtn.addEventListener("click", async () => {
     genStatus.textContent = "Rendering the sheet music...";
     resultEl.style.display = "block";
 
+    const notes = [];
+    if (lastMeta && lastMeta.mood) {
+      const modeText = lastMeta.mode === "minor" ? "minor" : "major";
+      const source = { you: "your choice", description: "from your description", music: "as the music turned out" }[lastMeta.modeSource] || "";
+      notes.push(`🎭 Read from your description: ${lastMeta.mood}. Mode: ${modeText} (${source}).`);
+    }
     if (lastMeta && lastMeta.referenceWork) {
-      refNote.textContent = `🎼 This piece was composed with real music from 「${lastMeta.referenceWork}」 as a reference.`;
+      notes.push(`🎼 Real music used as a reference: 「${lastMeta.referenceWork}」.`);
+    }
+    if (lastMeta && lastMeta.tempoHint) {
+      notes.push(`💡 Your description sounds closer to about ${lastMeta.tempoHint} BPM than the ${lastMeta.tempo} BPM you set — lower or raise the tempo slider and regenerate if you want that feel.`);
+    }
+    if (notes.length) {
+      refNote.textContent = notes.join("\n");
+      refNote.style.whiteSpace = "pre-line";
       refNote.style.display = "block";
     } else {
       refNote.style.display = "none";

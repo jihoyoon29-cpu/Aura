@@ -149,37 +149,47 @@ REFERENCE_WORKS = {
     "beethoven": {
         "path": "beethoven/opus18no1/movement1",
         "label": "Beethoven — String Quartet No. 1 (Op. 18 No. 1), 1st movement",
-        "keywords": ["beethoven"],
+        "character": "major key, lively and energetic classical allegro",
+    },
+    "beethoven_adagio": {
+        "path": "beethoven/opus18no1/movement2",
+        "label": "Beethoven — String Quartet No. 1 (Op. 18 No. 1), 2nd movement (Adagio)",
+        "character": "D minor, slow, tragic and lamenting",
     },
     "beethoven_late": {
         "path": "beethoven/opus132",
         "label": "Beethoven — String Quartet No. 15 (Op. 132)",
-        "keywords": ["grand", "solemn", "majestic", "heroic", "epic"],
+        "character": "A minor, slow, mysterious and searching, late-style",
     },
     "mozart": {
         "path": "mozart/k458/movement1",
         "label": "Mozart — String Quartet K.458 \"The Hunt\", 1st movement",
-        "keywords": ["mozart", "elegant", "courtly", "graceful"],
+        "character": "B-flat major, bright, elegant, hunting-style",
     },
     "haydn": {
         "path": "haydn/opus74no1/movement1",
         "label": "Haydn — String Quartet Op. 74 No. 1, 1st movement",
-        "keywords": ["haydn", "cheerful", "lively", "bright", "crisp", "fresh"],
+        "character": "C major, cheerful, crisp and lively",
     },
     "bach": {
         "path": "bach/bwv1.6",
         "label": "Bach — Chorale BWV 1.6",
-        "keywords": ["bach", "baroque", "solemn", "reverent", "devotional"],
+        "character": "F major, calm, reverent four-part chorale",
+    },
+    "bach_minor": {
+        "path": "bach/bwv102.7",
+        "label": "Bach — Chorale BWV 102.7",
+        "character": "C minor, solemn, dark four-part chorale",
     },
     "handel": {
         "path": "handel/rinaldo/Lascia_chio_pianga",
         "label": "Handel — \"Lascia ch'io pianga\" from the opera Rinaldo",
-        "keywords": ["handel", "plaintive", "sorrowful", "elegy", "tearful", "mournful"],
+        "character": "slow, tender, sorrowful lament aria",
     },
     "folk": {
         "path": "essenFolksong/ballad10",
         "label": "European folk melody (Essen Folksong Collection)",
-        "keywords": ["folk", "fairy tale", "rustic", "simple", "pastoral"],
+        "character": "simple, rustic folk tune",
     },
 }
 
@@ -237,37 +247,55 @@ def _get_reference_excerpt(style_id, max_measures=8):
         return None
 
 
-def _match_reference_style(client, prompt):
-    """분위기 프롬프트에 어울리는 실제 참고 작품을 고른다 (키워드 우선, 없으면 GPT)."""
+def _analyze_brief(client, prompt):
+    """One short call that reads the user's description properly (negations included) and returns:
+    mood, mode (major/minor/auto), traits of any named pieces/composers, things to avoid, a tempo
+    hint, and the best-fitting real reference excerpt (or None)."""
+    result = {"style": None, "mode": "auto", "mood": "", "traits": "", "avoid": "", "tempo": None}
     if not prompt:
-        return None
-    for style_id, info in REFERENCE_WORKS.items():
-        if any(kw.lower() in prompt.lower() for kw in info["keywords"]):
-            return style_id
+        return result
     try:
-        options = ", ".join(f"{sid}({info['label']})" for sid, info in REFERENCE_WORKS.items())
+        options = "\n".join(
+            f"- {sid}: {info['label']} [{info['character']}]" for sid, info in REFERENCE_WORKS.items()
+        )
+        user = f"""A user describes the orchestral piece they want:
+\"\"\"
+{prompt}
+\"\"\"
+
+Reply with JSON only, with these keys:
+"mood": the emotional character the user asks for, max 12 words. Respect negations ("nothing cheerful" means NOT cheerful).
+"mode": "minor" if the description implies a dark, sad, tragic, tense, solemn, ominous or mournful character or says minor; "major" if it clearly implies a bright, joyful, triumphant or warm character or says major; otherwise "auto".
+"traits": musical characteristics (key/mode, tempo feel, rhythms, harmony, texture, orchestration), max 60 words, of every piece, composer or style the user NAMED, from your own knowledge of those works. Empty string if none are named.
+"avoid": what the music must NOT sound like, max 20 words (for a dark brief e.g. "cheerful, bright major-key writing"). Empty string if nothing.
+"tempo": a fitting quarter-note tempo as an integer 40-200, or null if the description gives no hint.
+"style": the id of the reference excerpt below that matches BOTH the described mood and mode, or null if none really fits (a bright major excerpt never fits a dark brief; an unrelated excerpt is worse than none).
+
+Reference excerpts:
+{options}"""
         resp = _chat_completion(
             client,
             temperature=0.2,
-            max_tokens=60,
+            max_tokens=4000,
             response_format={"type": "json_object"},
             messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "사용자가 원하는 곡 분위기와 가장 잘 어울리는 참고 작품을 목록에서 고른다. "
-                        '뚜렷하게 어울리는 게 없으면 null. JSON 으로만 답한다: {"style": "id 또는 null"}'
-                    ),
-                },
-                {"role": "user", "content": f"목록: {options}\n\n분위기: {prompt}"},
+                {"role": "system", "content": "You are a careful music analyst. Reply with JSON only."},
+                {"role": "user", "content": user},
             ],
         )
         data = json.loads(resp.choices[0].message.content)
-        style = data.get("style")
-        return style if style in REFERENCE_WORKS else None
+        result["style"] = data.get("style") if data.get("style") in REFERENCE_WORKS else None
+        result["mode"] = data.get("mode") if data.get("mode") in ("major", "minor") else "auto"
+        for key, limit in (("mood", 160), ("traits", 700), ("avoid", 260)):
+            result[key] = str(data.get(key) or "").strip()[:limit]
+        try:
+            bpm = int(data.get("tempo"))
+            result["tempo"] = bpm if 30 <= bpm <= 240 else None
+        except (TypeError, ValueError):
+            result["tempo"] = None
     except Exception as exc:  # noqa: BLE001
-        print("[참고 스타일 매칭 실패]", exc)
-        return None
+        print("[Brief analysis failed]", exc)
+    return result
 
 
 app = Flask(__name__)
@@ -640,6 +668,72 @@ def _key_scale(fifths):
     return [letter + acc.get(letter, "") for letter in letters]
 
 
+STEP_PC = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}
+
+
+def _pc(name):
+    return (STEP_PC[name[0]] + name.count("#") - name.count("b")) % 12
+
+
+def _minor_scale(fifths):
+    """Natural minor of the key signature (relative minor) and its raised leading tone."""
+    major = _key_scale(fifths)
+    natural = major[5:] + major[:5]
+    lead = major[4]
+    lead = lead[:-1] if lead.endswith("b") else lead + "#"
+    return natural, lead
+
+
+def _tonality(fifths, mode):
+    """Prompt text describing the tonality + the note spellings the model must write explicitly."""
+    major = _key_scale(fifths)
+    minor, lead = _minor_scale(fifths)
+    n = abs(fifths)
+    sig = "no sharps or flats" if n == 0 else f"{n} {'sharps' if fifths > 0 else 'flats'}"
+    if mode == "major":
+        text = f"Key: {major[0]} major, scale {' '.join(major)} (key signature: {sig}). The piece is in the MAJOR mode."
+        spell = " ".join(major)
+    elif mode == "minor":
+        text = (
+            f"Key: {minor[0]} minor (key signature: {sig}). The piece is in the MINOR mode: natural minor scale "
+            f"{' '.join(minor)}; raise the 7th degree to {lead} (written explicitly) for cadences and leading-tone "
+            "motion, as in harmonic minor."
+        )
+        spell = " ".join(minor) + f" (+ raised {lead})"
+    else:
+        text = (
+            f"Key signature: {sig}. It fits {major[0]} major ({' '.join(major)}) or {minor[0]} minor "
+            f"({' '.join(minor)}, raised leading tone {lead}). Pick the MODE that matches the brief (dark, sad, "
+            "tragic, tense, solemn, mournful -> minor; bright, joyful, triumphant -> major) and stay in it."
+        )
+        spell = f"major {' '.join(major)} / minor {' '.join(minor)} (+ raised {lead})"
+    return {"text": text, "spell": spell}
+
+
+def _detect_mode(parts_measures, fifths):
+    """Major or minor, judged from where the parts come to rest and how often the tonics sound."""
+    major = _key_scale(fifths)
+    minor, _ = _minor_scale(fifths)
+    t, m = _pc(major[0]), _pc(minor[0])
+    weight, last = {}, {}
+    for measures in parts_measures.values():
+        for items in measures:
+            for n in _notes_only(items):
+                for step, alter, _octave in n["pitches"]:
+                    pc = (STEP_PC[step] + alter) % 12
+                    weight[pc] = weight.get(pc, 0) + n["units"]
+        for items in reversed(measures):
+            sounding = [n for n in _notes_only(items) if not n["rest"]]
+            if sounding:
+                step, alter, _octave = sounding[-1]["pitches"][0]
+                pc = (STEP_PC[step] + alter) % 12
+                last[pc] = last.get(pc, 0) + 1
+                break
+    minor_score = weight.get(m, 0) + 40 * last.get(m, 0)
+    major_score = weight.get(t, 0) + 40 * last.get(t, 0)
+    return "minor" if minor_score > major_score else "major"
+
+
 def _measure_units(beats, beat_type):
     return beats * 16 // beat_type
 
@@ -816,14 +910,15 @@ def _parse_notation(text, instrument_ids):
     return result
 
 
-def _plan_form(client, *, mood, measures, beats, beat_type, tempo, fifths, difficulty, instrument_ids, variation):
+def _plan_form(client, *, mood, measures, beats, beat_type, tempo, tonality, difficulty, instrument_ids, variation):
     """Short planning call: sections of the piece (character, dynamics, texture). Optional; None on failure."""
     try:
         names = ", ".join(ORCHESTRA_INSTRUMENTS[i]["name"] for i in instrument_ids)
         user = f"""Plan the large-scale form of an orchestral piece of exactly {measures} measures ({beats}/{beat_type}, about {tempo} BPM).
 
 Brief from the user: {mood}
-Key: fixed at the major scale {' '.join(_key_scale(fifths))} for the whole piece - do not plan key changes, modulations or minor-key sections.
+{tonality['text']}
+Keep the key signature for the whole piece (no modulations that change it). The character of the brief decides the mood of every section.
 Instruments: {names}
 Difficulty: {DIFFICULTY_GUIDE[difficulty]}
 Repetition preference: {REPETITION_GUIDE[variation['repetition']]}
@@ -864,10 +959,27 @@ Rules: sections are consecutive and their lengths add up to exactly {measures}; 
         return None
 
 
-def _compose_prompt(mood, beats, beat_type, tempo, fifths, measures, difficulty,
-                    instrument_ids, style_reference, variation, plan_text, feedback):
+def _interp_block(interp, mode):
+    lines = []
+    if interp.get("mood"):
+        lines.append(f"- Mood to convey: {interp['mood']}")
+    if mode in ("major", "minor"):
+        lines.append(f"- Mode: {mode}")
+    if interp.get("traits"):
+        lines.append("- Musical traits of the pieces/composers/styles the user named (take them as the model for this piece): " + interp["traits"])
+    if interp.get("avoid"):
+        lines.append(f"- Must NOT sound like: {interp['avoid']}")
+    if not lines:
+        return ""
+    return (
+        "\nHOW TO READ THE BRIEF (binding: it outranks every technical hint, example and idiom below; "
+        "the finished piece must clearly sound like this):\n" + "\n".join(lines) + "\n"
+    )
+
+
+def _compose_prompt(mood, beats, beat_type, tempo, tonality, measures, difficulty,
+                    instrument_ids, style_reference, variation, plan_text, feedback, interp, mode):
     measure_units = _measure_units(beats, beat_type)
-    scale = _key_scale(fifths)
     inst_lines = "\n".join(
         f"- {iid}: {ORCHESTRA_INSTRUMENTS[iid]['name']}, range {ORCHESTRA_INSTRUMENTS[iid]['range']}"
         for iid in instrument_ids
@@ -910,10 +1022,10 @@ def _compose_prompt(mood, beats, beat_type, tempo, fifths, measures, difficulty,
 
 Brief from the user (may contain several requirements; follow all of them):
 {mood}
-
+{_interp_block(interp, mode)}
 Time signature: {beats}/{beat_type}  (one measure = {measure_units} units; w=16 h=8 q=4 e=2 s=1)
 Tempo: quarter note = {tempo} BPM
-Key: major scale {' '.join(scale)} (key signature has {abs(fifths)} {'sharps' if fifths > 0 else 'flats' if fifths < 0 else 'accidentals'})
+{tonality['text']}
 Length: exactly {measures} measures
 Difficulty: {DIFFICULTY_GUIDE[difficulty]}
 
@@ -939,12 +1051,12 @@ Notation (plain text only, no markdown, no explanations):
 - Duration letters: w whole, h half, q quarter, e eighth, s sixteenth; a trailing . dots it (x1.5). No triplets.
 - Tie: append ~ to a note to tie it to the next note of the same pitch, e.g. C4h~ C4q
 - A measure consisting only of % repeats the previous measure of the same instrument.
-{notation_extra}- Pitches are absolute: ALWAYS write # or b explicitly for sharps/flats (in this key: {' '.join(scale)}), and no accidental means natural.
+{notation_extra}- Pitches are absolute: ALWAYS write # or b explicitly for sharps/flats (in this key: {tonality['spell']}), and no accidental means natural.
 - Every measure must add up to exactly the measure length in units.
 
 Example for 4/4 (violin, 2 measures):
 @violin
-{'!mf ' if variation['dynamics'] != 'none' else ''}C5q D5q E5e F5e G5q | A5h. Rq"""
+{'!mf ' if variation['dynamics'] != 'none' else ''}D5q E5q C5e B4e A4q | E5h. Rq"""
 
 
 def _compose_notation(client, *, instrument_ids, measures, **prompt_args):
@@ -961,7 +1073,8 @@ def _compose_notation(client, *, instrument_ids, measures, **prompt_args):
                     "role": "system",
                     "content": (
                         "You are an expert orchestral composer and arranger. You write scores in a compact "
-                        "plain-text notation exactly as specified by the user and output nothing else."
+                        "plain-text notation exactly as specified by the user and output nothing else. The mood the user describes is "
+                        "the top priority: whenever a technical hint, example or habit conflicts with it, follow the mood."
                     ),
                 },
                 {"role": "user", "content": prompt},
@@ -991,7 +1104,7 @@ def _tempo_xml(bpm):
     )
 
 
-def _build_musicxml(instrument_ids, parts_measures, meters, tempos, fifths, tempo):
+def _build_musicxml(instrument_ids, parts_measures, meters, tempos, fifths, tempo, mode_name="major"):
     score_parts, part_xml = [], []
     for idx, iid in enumerate(instrument_ids):
         meta = ORCHESTRA_INSTRUMENTS[iid]
@@ -1011,7 +1124,7 @@ def _build_musicxml(instrument_ids, parts_measures, meters, tempos, fifths, temp
             if m_idx == 1:
                 frags.append(
                     "<attributes><divisions>4</divisions>"
-                    f"<key><fifths>{fifths}</fifths><mode>major</mode></key>{_time_xml(beats, beat_type)}"
+                    f"<key><fifths>{fifths}</fifths><mode>{mode_name}</mode></key>{_time_xml(beats, beat_type)}"
                     f"<clef><sign>{clef_sign}</sign><line>{clef_line}</line></clef></attributes>"
                 )
                 if idx == 0:
@@ -1156,21 +1269,29 @@ def orchestra_generate():
     measures = max(2, min(measures, 120))
 
     mood = prompt or "No particular request: write something pleasant, natural and musical."
+    user_mode = body.get("mode") if body.get("mode") in ("major", "minor") else "auto"
 
-    # Two short, independent preparation calls run in parallel:
-    #  - a real composer excerpt (if the brief matches one) as style inspiration
+    # Two independent preparation calls run in parallel:
+    #  - brief analysis: mood (negations included), major/minor, traits of the pieces the user named,
+    #    and a real reference excerpt that actually fits the mood (or none)
     #  - a form plan for longer pieces, so the model has sections to follow instead of copying measures
     with ThreadPoolExecutor(max_workers=2) as pool:
-        style_future = pool.submit(_match_reference_style, client, prompt)
+        interp_future = pool.submit(_analyze_brief, client, prompt)
         plan_future = None
         if variation["plan"] and measures >= 12:
             plan_future = pool.submit(
                 _plan_form, client, mood=mood, measures=measures, beats=beats, beat_type=beat_type,
-                tempo=tempo, fifths=fifths, difficulty=difficulty, instrument_ids=instrument_ids, variation=variation,
+                tempo=tempo, tonality=_tonality(fifths, user_mode), difficulty=difficulty,
+                instrument_ids=instrument_ids, variation=variation,
             )
-        style_id = style_future.result()
+        interp = interp_future.result()
         plan_text = plan_future.result() if plan_future else None
+    style_id = interp["style"]
     style_reference = _get_reference_excerpt(style_id) if style_id else None
+
+    # The user's own Mode choice wins; otherwise the mode read from the description decides.
+    effective_mode = user_mode if user_mode != "auto" else interp["mode"]
+    tonality = _tonality(fifths, effective_mode)
 
     marks_ok = variation["dynamics"] != "none"
 
@@ -1178,8 +1299,9 @@ def orchestra_generate():
         segments = _compose_notation(
             client,
             instrument_ids=instrument_ids, measures=measures, beats=beats, beat_type=beat_type,
-            mood=mood, tempo=tempo, fifths=fifths, difficulty=difficulty,
+            mood=mood, tempo=tempo, tonality=tonality, difficulty=difficulty,
             style_reference=style_reference, variation=variation, plan_text=plan_text, feedback=feedback,
+            interp=interp, mode=effective_mode,
         )
         meters, tempos, cleaned = _global_events(
             segments, instrument_ids, measures, (beats, beat_type), tempo, variation
@@ -1216,7 +1338,10 @@ def orchestra_generate():
     except Exception as exc:  # noqa: BLE001
         return jsonify({"error": f"Score generation request failed: {exc}"}), 502
 
-    final_xml = _build_musicxml(instrument_ids, parts_measures, meters, tempos, fifths, tempo)
+    final_mode = effective_mode if effective_mode != "auto" else _detect_mode(parts_measures, fifths)
+    final_xml = _build_musicxml(instrument_ids, parts_measures, meters, tempos, fifths, tempo, final_mode)
+    hint = interp["tempo"]
+    tempo_hint = hint if hint and abs(hint - tempo) / tempo >= 0.25 else None
 
     return jsonify(
         {
@@ -1236,6 +1361,10 @@ def orchestra_generate():
                 "rewroteForVariety": retried,
                 "tempoChanges": len(tempos),
                 "meterChanges": sum(1 for i in range(1, len(meters)) if meters[i] != meters[i - 1]),
+                "mode": final_mode,
+                "modeSource": "you" if user_mode != "auto" else "description" if interp["mode"] != "auto" else "music",
+                "mood": interp["mood"],
+                "tempoHint": tempo_hint,
                 "referenceWork": REFERENCE_WORKS[style_id]["label"] if style_id and style_reference else None,
             },
         }
