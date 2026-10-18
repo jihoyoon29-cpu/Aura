@@ -1,6 +1,6 @@
 import { getCurrentUser, authedFetch, initNav } from "./auth.js";
 import { INSTRUMENT_GROUPS, makePreviewAudio } from "./instruments.js";
-import { renderPerInstrument, renderFullScore, createPlayback, renderMuteToggles, exportScoreToPdf, bindSeekBar } from "./score.js";
+import { renderPerInstrument, renderFullScore, createPlayback, renderMuteToggles, exportScoreToPdf, bindSeekBar, fileSafeName } from "./score.js";
 
 initNav();
 
@@ -45,6 +45,13 @@ const syncMoodCount = () => {
 };
 moodInput.addEventListener("input", syncMoodCount);
 syncMoodCount();
+
+// Title for downloaded files: what the user typed as the post title, else the first sentence of the description.
+function pieceTitle() {
+  const typed = $("post-title").value.trim();
+  if (typed) return typed;
+  return moodInput.value.trim().split(/[.!?\n。]/)[0].slice(0, 50);
+}
 
 let lastMusicXml = null;
 let lastMeta = null;
@@ -345,7 +352,7 @@ downloadXmlBtn.addEventListener("click", () => {
   const blob = new Blob([lastMusicXml], { type: "application/vnd.recordare.musicxml+xml" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = `orchestra_${Date.now()}.musicxml`;
+  a.download = fileSafeName(pieceTitle(), "orchestra", "musicxml");
   a.click();
   URL.revokeObjectURL(a.href);
 });
@@ -357,7 +364,7 @@ downloadPdfBtn.addEventListener("click", async () => {
   const original = downloadPdfBtn.textContent;
   downloadPdfBtn.textContent = "Preparing PDF...";
   try {
-    await exportScoreToPdf(lastMusicXml, `orchestra_${Date.now()}.pdf`);
+    await exportScoreToPdf(lastMusicXml, fileSafeName(pieceTitle(), "orchestra", "pdf"));
   } catch (err) {
     showMsg("Failed to create the PDF: " + err.message, "error");
   } finally {

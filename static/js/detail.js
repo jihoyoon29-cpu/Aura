@@ -1,6 +1,6 @@
 import { getCurrentUser, authedFetch, initNav } from "./auth.js";
 import { extractYouTubeId, youtubeEmbedUrl } from "./youtube.js";
-import { renderPerInstrument, renderFullScore, createPlayback, renderMuteToggles, exportScoreToPdf, bindSeekBar } from "./score.js";
+import { renderPerInstrument, renderFullScore, createPlayback, renderMuteToggles, exportScoreToPdf, bindSeekBar, fileSafeName } from "./score.js";
 
 initNav();
 
@@ -120,7 +120,7 @@ async function renderScore(musicXml) {
     const original = pdfBtn.textContent;
     pdfBtn.textContent = "Preparing PDF...";
     try {
-      await exportScoreToPdf(musicXml, `score_${postId}.pdf`);
+      await exportScoreToPdf(musicXml, fileSafeName(titleEl.textContent, `score_${postId}`, "pdf"));
     } catch (e) {
       alert("Failed to create the PDF: " + e.message);
     } finally {

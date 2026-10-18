@@ -34,6 +34,8 @@
 생성한 악보는 게시글로 등록할 수 있습니다 (Firestore `posts.musicXml`). 완성된 악보는
 MusicXML 또는 **PDF**로 내려받을 수 있습니다 (jsPDF + svg2pdf.js 로 OSMD가 그린 SVG를
 총보 1페이지 + 악기별 1페이지씩 변환, 브라우저에서 클라이언트 사이드로 처리 — 서버 왕복 없음).
+파일 이름은 곡 제목으로 저장됩니다 (게시글 상세는 글 제목, `/orchestra` 는 직접 입력한 제목 또는
+설명문 첫 문장; 한글 유지, 파일명에 쓸 수 없는 문자는 제거).
 
 악보는 **GPT가 MusicXML을 직접 쓰지 않습니다.** GPT는 `C4q D4q E4h | A4w~ | R | %` 같은 압축 텍스트
 표기(마디당 몇 토큰)만 쓰고, 서버(`_parse_notation` → `_build_musicxml`)가 이를 MusicXML 로 결정적으로

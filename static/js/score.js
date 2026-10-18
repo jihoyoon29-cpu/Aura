@@ -44,6 +44,20 @@ export async function ensurePdfLibs() {
   return window.jspdf.jsPDF;
 }
 
+// Turns a title into a safe file name (keeps Korean and other letters; drops characters that are
+// illegal in file names; empty -> fallback). `ext` is appended without a dot, e.g. "pdf".
+export function fileSafeName(title, fallback, ext) {
+  const cleaned = String(title || "")
+    .replace(/[\\/:*?"<>|\u0000-\u001f]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/[. ]+$/, "")
+    .slice(0, 60)
+    .trim()
+    .replace(/ /g, "_");
+  return `${cleaned || fallback}.${ext}`;
+}
+
 // Exports the score to a multi-page A4-landscape PDF: the full score first, then one section per
 // instrument. The score is re-rendered offscreen with OSMD's page layout (a single tall SVG would
 // exceed jsPDF's maximum page size for long pieces), and each OSMD page becomes one PDF page.
