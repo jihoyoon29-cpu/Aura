@@ -1,6 +1,6 @@
 import { getCurrentUser, authedFetch, initNav } from "./auth.js";
 import { extractYouTubeId, youtubeEmbedUrl } from "./youtube.js";
-import { renderPerInstrument, renderFullScore, createPlayback, renderMuteToggles, exportScoreToPdf, bindSeekBar, fileSafeName } from "./score.js";
+import { renderPerInstrument, renderFullScore, createPlayback, renderMuteToggles, exportScoreToPdf, bindSeekBar, fileSafeName, showPdfLink, showPdfError } from "./score.js";
 
 initNav();
 
@@ -73,6 +73,23 @@ async function renderScore(musicXml) {
   const pauseBtn = document.getElementById("sc-pause");
   const stopBtn = document.getElementById("sc-stop");
 
+  // Wire the PDF button first: it only needs the XML, not the (slower) score rendering and playback setup.
+  const pdfBtn = document.getElementById("score-download-pdf");
+  pdfBtn.addEventListener("click", async () => {
+    pdfBtn.disabled = true;
+    const original = pdfBtn.textContent;
+    pdfBtn.textContent = "Preparing PDF...";
+    try {
+      const result = await exportScoreToPdf(musicXml, fileSafeName(titleEl.textContent, `score_${postId}`, "pdf"));
+      showPdfLink(document.getElementById("score-pdf-status"), result);
+    } catch (e) {
+      showPdfError(document.getElementById("score-pdf-status"), e.message);
+    } finally {
+      pdfBtn.disabled = false;
+      pdfBtn.textContent = original;
+    }
+  });
+
   try {
     await renderFullScore(fullEl, musicXml);
   } catch (e) {
@@ -114,20 +131,6 @@ async function renderScore(musicXml) {
     if (details.open) ensurePartsRendered();
   });
 
-  const pdfBtn = document.getElementById("score-download-pdf");
-  pdfBtn.addEventListener("click", async () => {
-    pdfBtn.disabled = true;
-    const original = pdfBtn.textContent;
-    pdfBtn.textContent = "Preparing PDF...";
-    try {
-      await exportScoreToPdf(musicXml, fileSafeName(titleEl.textContent, `score_${postId}`, "pdf"));
-    } catch (e) {
-      alert("Failed to create the PDF: " + e.message);
-    } finally {
-      pdfBtn.disabled = false;
-      pdfBtn.textContent = original;
-    }
-  });
 }
 
 async function loadPost() {

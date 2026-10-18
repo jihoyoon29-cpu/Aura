@@ -599,6 +599,10 @@ input[type="range"] { width: 100%; accent-color: var(--amber); }
 .check input { margin-top: 3px; accent-color: var(--amber); width: 16px; height: 16px; }
 .check em { color: var(--paper-dim); font-style: normal; font-size: 0.82rem; }
 
+/* PDF export status + fallback link */
+.pdf-status { align-self: center; font-size: 0.85rem; }
+.pdf-status a { color: var(--amber); text-decoration: underline; }
+
 /* playback position bar */
 .pb-seek { flex: 1 1 160px; min-width: 120px; max-width: 420px; accent-color: var(--amber); }
 .pb-time { font-family: var(--font-mono); font-size: 0.8rem; color: var(--paper-dim); min-width: 5.5em; }

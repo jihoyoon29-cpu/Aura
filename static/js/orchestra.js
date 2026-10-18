@@ -1,6 +1,6 @@
 import { getCurrentUser, authedFetch, initNav } from "./auth.js";
 import { INSTRUMENT_GROUPS, makePreviewAudio } from "./instruments.js";
-import { renderPerInstrument, renderFullScore, createPlayback, renderMuteToggles, exportScoreToPdf, bindSeekBar, fileSafeName } from "./score.js";
+import { renderPerInstrument, renderFullScore, createPlayback, renderMuteToggles, exportScoreToPdf, bindSeekBar, fileSafeName, showPdfLink, showPdfError } from "./score.js";
 
 initNav();
 
@@ -364,9 +364,10 @@ downloadPdfBtn.addEventListener("click", async () => {
   const original = downloadPdfBtn.textContent;
   downloadPdfBtn.textContent = "Preparing PDF...";
   try {
-    await exportScoreToPdf(lastMusicXml, fileSafeName(pieceTitle(), "orchestra", "pdf"));
+    const result = await exportScoreToPdf(lastMusicXml, fileSafeName(pieceTitle(), "orchestra", "pdf"));
+    showPdfLink($("pdf-status"), result);
   } catch (err) {
-    showMsg("Failed to create the PDF: " + err.message, "error");
+    showPdfError($("pdf-status"), err.message);
   } finally {
     downloadPdfBtn.disabled = false;
     downloadPdfBtn.textContent = original;

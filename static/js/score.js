@@ -116,7 +116,34 @@ export async function exportScoreToPdf(musicXml, filename) {
     host.remove();
   }
   if (!doc) throw new Error("No sheet music available to export.");
-  doc.save(filename);
+  const url = URL.createObjectURL(doc.output("blob"));
+  // Try to start the download right away. Browsers (notably Safari) may ignore a download that starts
+  // seconds after the click, so callers also show a link (showPdfLink) that the user can click.
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  return { url, filename };
+}
+
+// Shows "PDF created ... click here to save it" in `el`; the link is a fresh user click, so it always works.
+export function showPdfLink(el, { url, filename }) {
+  if (el._pdfUrl) URL.revokeObjectURL(el._pdfUrl);
+  el._pdfUrl = url;
+  el.textContent = "";
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.textContent = "click here to save it";
+  el.append(`PDF created: ${filename}. If the download didn't start, `, link, ".");
+  el.hidden = false;
+}
+
+export function showPdfError(el, message) {
+  el.textContent = `Couldn't create the PDF: ${message}`;
+  el.hidden = false;
 }
 
 function instrumentName(inst, idx) {
