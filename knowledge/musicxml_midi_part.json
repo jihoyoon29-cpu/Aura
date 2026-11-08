@@ -1,0 +1,27 @@
+{
+ "source": "W3C MusicXML 4.0 Tutorial - The MIDI-Compatible Part",
+ "url": "https://www.w3.org/2021/06/musicxml40/tutorial/midi-compatible-part/",
+ "license_note": "W3C document; short factual summary with attribution.",
+ "chunks": [
+  {
+   "topic": "overview",
+   "text": "MusicXML has notation elements (how music is displayed or printed) and sound elements (the sonic realization used for MIDI playback). Sound elements are the minimum needed to produce a MIDI file from MusicXML."
+  },
+  {
+   "topic": "attributes",
+   "text": "attributes holds divisions (units per quarter note; one value per part at the start of the first measure, e.g. 24 allows triplets and sixteenths), key (fifths: negative for flats, plus mode major/minor), time (beats and beat-type) and transpose (chromatic required; diatonic and octave-change optional; a B-flat trumpet uses diatonic -1, chromatic -2)."
+  },
+  {
+   "topic": "notes",
+   "text": "A note has pitch (step A-G, alter, octave) or rest, duration as an integer number of divisions, optional tie and chord. Always write alter, even when the key signature implies the accidental. rest measure=\"yes\" marks a whole-measure rest. A tie has type start or stop (stop before start when a note has both). chord marks a note sounding together with the previous one; if durations differ the longest comes first, otherwise use separate parts."
+  },
+  {
+   "topic": "voices",
+   "text": "Parallel lines use backup and forward to move the time counter, organised either as layers or as voice 1 / voice 2. barline is used for playback only to mark repeats and endings; bar-style is graphic only."
+  },
+  {
+   "topic": "sound",
+   "text": "The sound element carries tempo (quarter notes per minute) and dynamics (a percentage of forte velocity). Without a sound suggestion MusicXML assumes MIDI velocity 90 (about forte) and defines no default tempo. Grace notes and ornaments such as trills have sound attributes (for example steal-time and start-note) so they play back correctly."
+  }
+ ]
+}

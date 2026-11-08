@@ -15,6 +15,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 
 import requests
+import rag
 from flask import Flask, request, jsonify, render_template, send_from_directory, abort
 from dotenv import load_dotenv
 
@@ -978,7 +979,7 @@ def _interp_block(interp, mode):
 
 
 def _compose_prompt(mood, beats, beat_type, tempo, tonality, measures, difficulty,
-                    instrument_ids, style_reference, variation, plan_text, feedback, interp, mode):
+                    instrument_ids, style_reference, variation, plan_text, feedback, interp, mode, orch_notes=None):
     measure_units = _measure_units(beats, beat_type)
     inst_lines = "\n".join(
         f"- {iid}: {ORCHESTRA_INSTRUMENTS[iid]['name']}, range {ORCHESTRA_INSTRUMENTS[iid]['range']}"
@@ -995,6 +996,13 @@ def _compose_prompt(mood, beats, beat_type, tempo, tonality, measures, difficult
         plan_block = (
             "\nForm plan (follow it measure by measure; each section must sound clearly different from the "
             "previous ones in material, dynamics, register or instrumentation):\n" + plan_text + "\n"
+        )
+    notes_block = ""
+    if orch_notes:
+        notes_block = (
+            "\nOrchestration notes for the chosen instruments (from the Philharmonia Orchestra's instrument "
+            "guides; use them to give each instrument idiomatic material, but the ranges listed above stay binding "
+            "and the user's brief outranks these notes):\n" + orch_notes + "\n"
         )
     dyn_guide = DYNAMICS_GUIDE[variation["dynamics"]]
     notation_extra = ""
@@ -1031,7 +1039,7 @@ Difficulty: {DIFFICULTY_GUIDE[difficulty]}
 
 Instruments (one block each, in this order; keep every note inside the instrument's range):
 {inst_lines}
-{style_block}{plan_block}
+{style_block}{plan_block}{notes_block}
 Variation: {REPETITION_GUIDE[variation['repetition']]}
 Dynamics: {dyn_guide or 'Do not write any dynamic markings.'}
 
@@ -1198,6 +1206,9 @@ def orchestra_recommend():
         return jsonify({"recommended": [], "reason": ""})
 
     catalog = ", ".join(f"{k}({v['name']})" for k, v in ORCHESTRA_INSTRUMENTS.items())
+    # RAG: instrument facts (timbre, role, range) most relevant to this mood ground the recommendation.
+    hits = rag.search(client, prompt, k=14, scope="instrument")
+    knowledge_text = rag.format_notes(hits, max_chars=4000)
     try:
         resp = _chat_completion(
             client,
@@ -1211,7 +1222,9 @@ def orchestra_recommend():
                         "You are an orchestration advisor. Read the mood the user wants for their piece, "
                         "and pick the instruments from the given list that best fit that mood. "
                         'Reply with JSON only: {"recommended": ["id", ...], "reason": "one English sentence explaining why"}. '
-                        "recommended must only contain ids from the allowed list below."
+                        "recommended must only contain ids from the allowed list below. "
+                        "Base your choice on the reference notes when they apply (they come from the Philharmonia "
+                        "Orchestra's instrument guides)."
                     ),
                 },
                 {
@@ -1219,7 +1232,8 @@ def orchestra_recommend():
                     "content": (
                         f"Allowed ids: {catalog}\n\n"
                         f"Desired mood: {prompt}\n\n"
-                        "Put 3-8 instruments that fit this mood in recommended, and explain why in one sentence in reason."
+                        + (f"Reference notes:\n{knowledge_text}\n\n" if knowledge_text else "")
+                        + "Put 3-8 instruments that fit this mood in recommended, and explain why in one sentence in reason."
                     ),
                 },
             ],
@@ -1232,7 +1246,7 @@ def orchestra_recommend():
         i for i in (data.get("recommended") or []) if i in ORCHESTRA_INSTRUMENTS
     ]
     reason = (data.get("reason") or "").strip()
-    return jsonify({"recommended": recommended, "reason": reason})
+    return jsonify({"recommended": recommended, "reason": reason, "sources": rag.sources(hits)})
 
 
 @app.route("/api/orchestra/generate", methods=["POST"])
@@ -1294,6 +1308,8 @@ def orchestra_generate():
     tonality = _tonality(fifths, effective_mode)
 
     marks_ok = variation["dynamics"] != "none"
+    knowledge = rag.instrument_notes(instrument_ids)
+    orch_notes = rag.format_notes(knowledge, max_chars=400 * len(instrument_ids)) or None
 
     def compose(feedback=None):
         segments = _compose_notation(
@@ -1301,7 +1317,7 @@ def orchestra_generate():
             instrument_ids=instrument_ids, measures=measures, beats=beats, beat_type=beat_type,
             mood=mood, tempo=tempo, tonality=tonality, difficulty=difficulty,
             style_reference=style_reference, variation=variation, plan_text=plan_text, feedback=feedback,
-            interp=interp, mode=effective_mode,
+            interp=interp, mode=effective_mode, orch_notes=orch_notes,
         )
         meters, tempos, cleaned = _global_events(
             segments, instrument_ids, measures, (beats, beat_type), tempo, variation
@@ -1366,6 +1382,7 @@ def orchestra_generate():
                 "mood": interp["mood"],
                 "tempoHint": tempo_hint,
                 "referenceWork": REFERENCE_WORKS[style_id]["label"] if style_id and style_reference else None,
+                "knowledgeSources": rag.sources(knowledge),
             },
         }
     )

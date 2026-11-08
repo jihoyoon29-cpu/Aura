@@ -142,6 +142,21 @@ ai-music-app/
 3. 제목/설명과 함께 `POST /api/posts` 호출 → Firestore `posts` 컬렉션에 저장
 4. 상세 페이지(`/post/<id>`)에서 오디오 재생 및 댓글 작성 (`POST /api/posts/<id>/comments`, 로그인 필요)
 
+## 지식 베이스 (RAG)
+
+오케스트라 생성기는 `knowledge/` 폴더의 자료를 GPT 호출에 함께 넣어 줍니다. 자료는 원문 복사가 아니라 **요약·재서술**이고, 각 항목에 출처 URL이 붙어 있습니다.
+
+| 파일 | 출처 | 용도 |
+|------|------|------|
+| `knowledge/instruments.json` | [Philharmonia – Instruments](https://philharmonia.co.uk/resources/instruments/) | 악기별 음역·음색·역할 (악기 16종 × 2~3개 조각) |
+| `knowledge/musicxml_midi_part.json` | [W3C MusicXML 4.0 – MIDI-compatible part](https://www.w3.org/2021/06/musicxml40/tutorial/midi-compatible-part/) | MusicXML 재생용 요소 정리 (참고용; 현재 GPT는 MusicXML을 직접 쓰지 않으므로 작곡 프롬프트에는 넣지 않음) |
+
+- `rag.py`: 자료 로드, 임베딩(`text-embedding-3-small`) 검색, 키워드 폴백.
+- **악기 추천** (`/api/orchestra/recommend`): 분위기 문장과 가장 비슷한 악기 조각을 의미 검색해 GPT에 근거로 제공하고, 응답에 `sources`를 돌려줍니다.
+- **작곡** (`/api/orchestra/generate`): 선택한 악기의 음색·역할 조각을 프롬프트에 넣습니다. 응답 `meta.knowledgeSources`에 사용한 출처가 담깁니다. 악기 음역은 기존 `ORCHESTRA_INSTRUMENTS`의 값이 우선합니다.
+- 임베딩은 처음 한 번 계산해 `knowledge/index.json`에 캐시합니다 (git에는 올리지 않음). 자료를 고치면 해당 조각만 다시 계산됩니다.
+- Philharmonia 팀파니 페이지의 음역 표기는 비올라 값이 잘못 복사된 것이라 사용하지 않았습니다.
+
 ## 참고 / 주의사항
 
 - 이 저장소는 로컬 개발/데모 기준으로 구성되어 있습니다. 실서비스 배포 시에는 로컬 파일 저장 대신

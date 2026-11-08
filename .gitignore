@@ -7,3 +7,4 @@ static/generated/*
 !static/generated/.gitkeep
 .DS_Store
 .claude/
+knowledge/index.json

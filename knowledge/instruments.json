@@ -1,0 +1,301 @@
+{
+ "source": "Philharmonia Orchestra - Instruments (resources)",
+ "url": "https://philharmonia.co.uk/resources/instruments/",
+ "license_note": "Facts paraphrased from the Philharmonia instrument guides; not a copy of the pages. Ranges given there in Hz were converted to approximate note names.",
+ "instruments": {
+  "violin": {
+   "name": "Violin",
+   "url": "https://philharmonia.co.uk/resources/instruments/violin/",
+   "chunks": [
+    {
+     "topic": "range",
+     "text": "Violin: strings are tuned G3, D4, A4, E5. The source gives a frequency range of about 195 Hz to 1.6 kHz (roughly G3 to G6 by conversion); the top note depends on the player's skill. It is the most agile string instrument."
+    },
+    {
+     "topic": "timbre",
+     "text": "Violin timbre: the low register is rich and vocal. A melody on the low G string sounds darker and thicker than the same pitch on the A string. Several violins sustaining notes together create a floating effect."
+    },
+    {
+     "topic": "role",
+     "text": "Violin role and technique: split into firsts and seconds (about 16 and 14 players in a large orchestra); the leader of the firsts also leads the orchestra. Since the early 20th century composers treat the violins as equal partners with other sections. Up-bows are lighter and suit upbeats; down-bows are heavier and emphasise downbeats and strong attacks."
+    }
+   ],
+   "source_range": "G3-G6"
+  },
+  "viola": {
+   "name": "Viola",
+   "url": "https://philharmonia.co.uk/resources/instruments/viola/",
+   "chunks": [
+    {
+     "topic": "range",
+     "text": "Viola: strings C, G, D, A; the lowest open C lies a fifth below the violin's lowest note. The source gives about 130 Hz to 1.8 kHz (roughly C3 to A6 by conversion)."
+    },
+    {
+     "topic": "timbre",
+     "text": "Viola timbre: thicker and darker than the violin, with the lower strings richer and darker still. It suits resonant solos in the middle of the orchestral range and blends well with clarinet and bassoon."
+    },
+    {
+     "topic": "role",
+     "text": "Viola role and technique: the alto voice of the strings; once mostly filling harmonies between cello and violin, its writing is now as demanding as for other strings and it can be as agile. Composers mark sul C or sul G to keep a phrase on a lower string. A large work uses about twelve violas."
+    }
+   ],
+   "source_range": "C3-A6"
+  },
+  "cello": {
+   "name": "Cello",
+   "url": "https://philharmonia.co.uk/resources/instruments/cello/",
+   "chunks": [
+    {
+     "topic": "range",
+     "text": "Cello: strings tuned in fifths C, G, D, A, an octave below the viola. The source gives about 65 Hz to 1.0 kHz (roughly C2 to B5 by conversion). Written mostly in bass clef, moving to tenor clef as the music rises and to treble clef when very high; players dislike frequent clef changes and long passages in tenor clef."
+    },
+    {
+     "topic": "timbre",
+     "text": "Cello timbre: a deep, tenor-voiced sound that can evoke melancholy; broad vibrato adds warmth; the lower strings are rich and dark; wide range, powerful sound and a clear, crisp attack."
+    },
+    {
+     "topic": "role",
+     "text": "Cello role and technique: the tenor voice of the strings; plays bass lines and also melodies that rise above the orchestra; part of the orchestra's engine room with crisp, architectural phrasing and driving rhythmic patterns. Sul C and sul G keep a phrase on the lower strings; on-the-string versus off-the-string (bouncing) bowing; eight to twelve cellos in a symphony orchestra."
+    }
+   ],
+   "source_range": "C2-B5"
+  },
+  "contrabass": {
+   "name": "Double bass (contrabass)",
+   "url": "https://philharmonia.co.uk/resources/instruments/double-bass/",
+   "chunks": [
+    {
+     "topic": "range",
+     "text": "Double bass: strings tuned in fourths E, A, D, G; it sounds an octave lower than written. The source gives about 41 Hz to 392 Hz (roughly E1 to G4); a low-C extension reaches C1. It is the largest string instrument and descends from the viol rather than the violin."
+    },
+    {
+     "topic": "timbre",
+     "text": "Double bass timbre: warm, deep and rich."
+    },
+    {
+     "topic": "role",
+     "text": "Double bass role and technique: mostly supports the harmony and rhythm from the background and only occasionally takes a solo or prominent line. Bowed with either a French bow or the taller German (Butler) bow, held underhand."
+    }
+   ],
+   "source_range": "E1-G4"
+  },
+  "harp": {
+   "name": "Harp",
+   "url": "https://philharmonia.co.uk/resources/instruments/harp/",
+   "chunks": [
+    {
+     "topic": "range",
+     "text": "Harp: the source states a range from C1 to G7 and writes it on two staves like the piano. Played with the thumbs and first three fingers of each hand: up to four notes per hand, close spacing preferred; wide intervals only between thumb and first finger."
+    },
+    {
+     "topic": "timbre",
+     "text": "Harp timbre by register: the low register is resonant, good for single notes and chords but fast runs blur; the middle register is the most resonant and suits arpeggios, short runs and chords; the high register rings less, so short runs work better than chords or long single notes. Rich and powerful for a harp but not especially loud."
+    },
+    {
+     "topic": "role",
+     "text": "Harp role and technique: supports harmony with chords, adds a bright attack at the start of notes, phrases or bass lines, and makes sweeping glissandos. Notes ring until stopped, so other instruments must play quietly for the harp to be heard in melodic passages. Pedal changes need planning in chromatic passages and key changes; a trill is made by rapidly repeating one note on two strings. Composers usually write for one harp, two in a larger orchestra."
+    }
+   ],
+   "source_range": "C1-G7"
+  },
+  "flute": {
+   "name": "Flute",
+   "url": "https://philharmonia.co.uk/resources/instruments/flute/",
+   "chunks": [
+    {
+     "topic": "range",
+     "text": "Flute: about three octaves starting at middle C (or the B below with a longer foot joint); the source gives about 261 Hz to 2.1 kHz. The C flute does not transpose; the piccolo sounds an octave higher than written."
+    },
+    {
+     "topic": "timbre",
+     "text": "Flute timbre: beautiful sustained melodies, blends well with other instruments; replaced the recorder in the orchestra partly for its brighter tone and greater power."
+    },
+    {
+     "topic": "role",
+     "text": "Flute role: plays solos and sustained melodies and often provides background colour under activity elsewhere. Relatives in common use are the piccolo, the alto flute in G and sometimes the bass flute. The metal-key Boehm system made far more virtuosic music possible."
+    }
+   ],
+   "source_range": "C4-C7"
+  },
+  "piccolo": {
+   "name": "Piccolo",
+   "url": "https://philharmonia.co.uk/resources/instruments/piccolo/",
+   "chunks": [
+    {
+     "topic": "range",
+     "text": "Piccolo: about 587 Hz to 4.2 kHz (roughly D5 to C8 by conversion); sounds an octave higher than written; fingering is the same as the flute's. The tube is only about 33 cm long."
+    },
+    {
+     "topic": "timbre",
+     "text": "Piccolo timbre: bright, it adds shine to the music."
+    },
+    {
+     "topic": "role",
+     "text": "Piccolo role: often alternates with the flute players; first used in a major work in the finale of Beethoven's Fifth Symphony; the go-to instrument for jubilant passages, rapid runs and trills; also popular in military bands."
+    }
+   ],
+   "source_range": "D5-C8"
+  },
+  "oboe": {
+   "name": "Oboe",
+   "url": "https://philharmonia.co.uk/resources/instruments/oboe/",
+   "chunks": [
+    {
+     "topic": "range",
+     "text": "Oboe: about 233 Hz to 1.6 kHz (roughly Bb3 to G6 by conversion), sitting just below the flute; a double-reed instrument with a conical wooden bore."
+    },
+    {
+     "topic": "timbre",
+     "text": "Oboe timbre: sweet, haunting and often called pastoral as a solo. Its larger relative, the cor anglais, is lower, more resonant and more melancholy."
+    },
+    {
+     "topic": "role",
+     "text": "Oboe role: the soprano voice of the double-reed family and a featured solo instrument, used in orchestras for about 400 years. Baroque, classical, Viennese and modern types differ in tone and range; modern oboes blend well and can be agile."
+    }
+   ],
+   "source_range": "Bb3-G6"
+  },
+  "clarinet": {
+   "name": "Clarinet",
+   "url": "https://philharmonia.co.uk/resources/instruments/clarinet/",
+   "chunks": [
+    {
+     "topic": "range",
+     "text": "Clarinet: about 146 Hz to 2.1 kHz (roughly D3 to C7 by conversion). It exists in many sizes, from sopranino to contrabass (the contrabass plays lower than a double bass); invented around 1690 by Johann Denner."
+    },
+    {
+     "topic": "timbre",
+     "text": "Clarinet timbre: smooth and creamy; low notes are warm and resonant, high notes bright and clear; plaintive and clear overall; can be surprisingly loud or very soft."
+    },
+    {
+     "topic": "role",
+     "text": "Clarinet role: suited to romantic melodies and to agitated, angular, accented textures; also associated with the rippling, swooping sound of jazz and swing."
+    }
+   ],
+   "source_range": "D3-C7"
+  },
+  "bassoon": {
+   "name": "Bassoon",
+   "url": "https://philharmonia.co.uk/resources/instruments/bassoon/",
+   "chunks": [
+    {
+     "topic": "range",
+     "text": "Bassoon: about 58 Hz to 587 Hz (roughly Bb1 to D5 by conversion); a double-reed bass woodwind with a very long tube (about 254 cm); the contrabassoon sounds an octave lower. It uses all ten fingers, thumbs included."
+    },
+    {
+     "topic": "timbre",
+     "text": "Bassoon timbre: the lowest notes are rich with a slightly buzzing double-reed quality; higher up the tone becomes sweet and nasal; its warm vibrato can sound remarkably human, like a resonant baritone singer."
+    },
+    {
+     "topic": "role",
+     "text": "Bassoon role: an expressive solo voice, punchy rhythmic lines, and the bass voice that supports the whole orchestra; long valued for its versatility."
+    }
+   ],
+   "source_range": "Bb1-D5"
+  },
+  "trumpet": {
+   "name": "Trumpet",
+   "url": "https://philharmonia.co.uk/resources/instruments/trumpet/",
+   "chunks": [
+    {
+     "topic": "range",
+     "text": "Trumpet: about 164 Hz to 1.0 kHz (roughly E3 to B5 by conversion); tube about 131 cm. Valves, credited to Heinrich Stolzel in 1814, made it common in the orchestra."
+    },
+    {
+     "topic": "timbre",
+     "text": "Trumpet timbre: can be extremely loud; with a mute it can be very soft and sweet, close to an oboe; also able to play lyrical melodies."
+    },
+    {
+     "topic": "role",
+     "text": "Trumpet role: the soprano voice of the brass; used for rapid note sequences, lyrical melodies and bold tunes that grab attention; muting is a standard colour."
+    }
+   ],
+   "source_range": "E3-B5"
+  },
+  "french_horn": {
+   "name": "Horn (French horn)",
+   "url": "https://philharmonia.co.uk/resources/instruments/horn/",
+   "chunks": [
+    {
+     "topic": "range",
+     "text": "Horn: about 62 Hz to 698 Hz (roughly B1 to F5 by conversion); about 270 cm of coiled tubing."
+    },
+    {
+     "topic": "timbre",
+     "text": "Horn timbre: mellow and soothing, able to lift a simple tune; a full section playing loudly is very powerful and cuts through any orchestral texture."
+    },
+    {
+     "topic": "role",
+     "text": "Horn role: harmonic filler between the bass line and the melody, holding long sustained background notes, which helps unify the orchestra's sound; before the 20th century composers often wrote rustic, hunting-style horn parts."
+    }
+   ],
+   "source_range": "B1-F5"
+  },
+  "trombone": {
+   "name": "Trombone",
+   "url": "https://philharmonia.co.uk/resources/instruments/trombone/",
+   "chunks": [
+    {
+     "topic": "range",
+     "text": "Trombone: about 82 Hz to 523 Hz (roughly E2 to C5 by conversion). The tenor is the standard instrument of the brass section; a bass trombone is often added for the low notes; the alto, a fourth higher than the tenor, is rare."
+    },
+    {
+     "topic": "timbre",
+     "text": "Trombone timbre: can be soft and melodic, as in Renaissance church music for trombone groups, yet provides much of the orchestra's power at its loudest. The sliding glissando often sounds comic."
+    },
+    {
+     "topic": "role",
+     "text": "Trombone role and technique: the slide selects pitches and makes glissandos; trombones became regular orchestra members only in the early 19th century."
+    }
+   ],
+   "source_range": "E2-C5"
+  },
+  "tuba": {
+   "name": "Tuba",
+   "url": "https://philharmonia.co.uk/resources/instruments/tuba/",
+   "chunks": [
+    {
+     "topic": "range",
+     "text": "Tuba: about 41 Hz to 262 Hz (roughly E1 to C4 by conversion); about 416 cm of tubing; sound is made by buzzing the lips into the mouthpiece and valves change pitch."
+    },
+    {
+     "topic": "timbre",
+     "text": "Tuba timbre: warm and rich with a deep tone through the lower half of the orchestra; the middle register can sound very sorrowful; it can also sound comical or funereal and can play in a jocular way."
+    },
+    {
+     "topic": "role",
+     "text": "Tuba role: the bass voice of the brass; plays expressive bass melodies and melodies in the tenor register, and creates large swells that heighten emotional peaks, like the timpani. Powerful with the full brass section; old oom-pah writing is far from its best use."
+    }
+   ],
+   "source_range": "E1-C4"
+  },
+  "timpani": {
+   "name": "Timpani",
+   "url": "https://philharmonia.co.uk/resources/instruments/timpani/",
+   "chunks": [
+    {
+     "topic": "range",
+     "text": "Timpani: tuned drums; the source lists tuning strings C, G, D, A and says pitch is changed with foot pedals. CAUTION: the frequency range printed on the source page (130 Hz to 1.8 kHz, with an image captioned 'Viola range') is a copy-paste error and must not be used."
+    },
+    {
+     "topic": "role",
+     "text": "Timpani role and technique: provides the orchestra's underlying beat, supports the beat and the bass notes of chords, and sometimes leads, as in Berlioz's 'March to the Scaffold' (played with sponge-headed sticks by two timpanists). Sticks and mallets vary widely; conductors keep near-constant eye contact with the timpanist."
+    }
+   ]
+  },
+  "piano": {
+   "name": "Piano and other keyboards",
+   "url": "https://philharmonia.co.uk/resources/instruments/keyboards/",
+   "chunks": [
+    {
+     "topic": "range",
+     "text": "Piano: a very wide range (the source gives no exact pitches), powerful tone across it. Other orchestral keyboards: harpsichord (plucked strings, closer to a steel-stringed guitar than a piano), celesta (bell- and glockenspiel-like, magical), organ (pipe timbre shaped by stops; hands and feet)."
+    },
+    {
+     "topic": "role",
+     "text": "Keyboard role: keyboards are no longer permanent orchestra members but often play as equal partners in orchestral works, usually at the back near the percussion. The piano is often a solo instrument with orchestra and uses pedals to shape dynamics and sound; the harpsichord was standard in 18th-century orchestras and as a continuo instrument; the celesta is used regularly."
+    }
+   ]
+  }
+ }
+}
